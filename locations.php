@@ -10,6 +10,7 @@ include 'php/config.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym Locations - GymBuddy</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 </head>
 <body>
     <header>
@@ -34,7 +35,25 @@ include 'php/config.php';
     </header>
 
     <main>
-        <h1>Gym Locations</h1>
+    <section class="about" id="about">
+
+
+
+<div class="row">
+
+
+   <div class="content">
+        <h3>Explore</h3>
+        <p>
+        Welcome to our Gym Locations page! Easily find gyms in your area and explore the facilities near you. Our dedicated trainers are available at each location, ready to guide you with their unique expertise to help you achieve your fitness goals. Start your journey by locating the perfect gym today!</p>
+      
+   </div>
+</div>
+
+
+</section>
+
+
         <div class="location-grid">
             <div class="location">
                 <h2>Carmona, Cavite</h2>
@@ -52,7 +71,35 @@ include 'php/config.php';
     </main>
 
     <footer>
-        <p>&copy; 2023 GymBuddy. All rights reserved.</p>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="index.php">Home</a></li>
+                    <li><a href="trainers.php">Trainers</a></li>
+                    <li><a href="locations.php">Gym Locations</a></li>
+                    <li><a href="videos.php">Videos</a></li>
+                    <li><a href="about.php">About Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Connect With Us</h3>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Email: Gymbuddy@gmail.com</p>
+                <p>Phone: +93 960 456 6595</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 GymBuddy. All rights reserved.</p>
+        </div>
     </footer>
 
     <a href="index.php" class="back-to-home">Back to Home</a>

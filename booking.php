@@ -44,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book a Session - GymBuddy</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 </head>
 <body>
     <header>
@@ -51,7 +52,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <ul>
                 <li><a href="index.php">Home</a></li>
                 <li><a href="trainers.php">Trainers</a></li>
-                <li><a href="locations.php">Gym Locations</a></li>
                 <li><a href="videos.php">Videos</a></li>
                 <li><a href="about.php">About Us</a></li>
                 <?php if(isset($_SESSION['user_id'])): ?>
@@ -68,7 +68,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </header>
 
     <main>
+        <div class="book">
         <h1>Book a Session with <?php echo htmlspecialchars($trainer['name']); ?></h1>
+        </div>
         <?php if (isset($success_message)): ?>
             <p class="success-message"><?php echo $success_message; ?></p>
         <?php endif; ?>
@@ -84,7 +86,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </main>
 
     <footer>
-        <p>&copy; 2023 GymBuddy. All rights reserved.</p>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="index.php">Home</a></li>
+                    <li><a href="trainers.php">Trainers</a></li>
+                    <li><a href="videos.php">Videos</a></li>
+                    <li><a href="about.php">About Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Connect With Us</h3>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Email: Gymbuddy@gmail.com</p>
+                <p>Phone: +93 960 456 6595</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 GymBuddy. All rights reserved.</p>
+        </div>
     </footer>
 
     <a href="trainers.php" class="back-to-home">Back to Trainers</a>

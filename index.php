@@ -18,7 +18,6 @@ include 'php/config.php';
             <ul>
                 <li><a href="index.php">Home</a></li>
                 <li><a href="trainers.php">Trainers</a></li>
-                <li><a href="locations.php">Gym Locations</a></li>
                 <li><a href="videos.php">Videos</a></li>
                 <li><a href="about.php">About Us</a></li>
                 <?php if(isset($_SESSION['user_id'])): ?>
@@ -35,14 +34,18 @@ include 'php/config.php';
     </header>
 
     <main>
-        <section class="hero">
-            <div class="hero-content">
-                <h1>Welcome to GymBuddy</h1>
-                <p>Book a trainer, anytime, anywhere</p>
-                <a href="trainers.php" class="cta-button">Find a Trainer</a>
-            </div>
-        </section>
+    <section class="home" id="home">
+       
+       <div class="content">
+           <h3>Gym Buddy</h3>
+           <span>Book a trainer, Anytime, Anywhere</span> 
+           <p class="simple-shadow">Your ultimate fitness hub, designed to help you take control of your journey. Book expert trainers, follow workout paths tailored to your goals, discover nearby gyms with all the details you need, and watch high-quality workout tutorials. Start building your best self with us, wherever and however you like.</p>
+           <a href="trainers.php" class="cta-button">Find a Trainer</a>
 
+       </div>
+      
+   </section>
+        
         <section class="features">
             <div class="feature">
                 <i class="fas fa-dumbbell"></i>
@@ -61,19 +64,7 @@ include 'php/config.php';
             </div>
         </section>
 
-        <section class="testimonials">
-            <h2>What Our Clients Say</h2>
-            <div class="testimonial">
-                <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="Client 1">
-                <p>"GymBuddy helped me achieve my fitness goals faster than I ever thought possible!"</p>
-                <h3>Sarah M.</h3>
-            </div>
-            <div class="testimonial">
-                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Client 2">
-                <p>"The convenience of booking trainers through GymBuddy is unmatched. Highly recommended!"</p>
-                <h3>John D.</h3>
-            </div>
-        </section>
+    
     </main>
 
     <footer>
@@ -83,7 +74,6 @@ include 'php/config.php';
                 <ul>
                     <li><a href="index.php">Home</a></li>
                     <li><a href="trainers.php">Trainers</a></li>
-                    <li><a href="locations.php">Gym Locations</a></li>
                     <li><a href="videos.php">Videos</a></li>
                     <li><a href="about.php">About Us</a></li>
                 </ul>
@@ -99,12 +89,12 @@ include 'php/config.php';
             </div>
             <div class="footer-section">
                 <h3>Contact Us</h3>
-                <p>Email: info@gymbuddy.com</p>
-                <p>Phone: (123) 456-7890</p>
+                <p>Email: Gymbuddy@gmail.com</p>
+                <p>Phone: +93 960 456 6595</p>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2023 GymBuddy. All rights reserved.</p>
+            <p>&copy; 2024 GymBuddy. All rights reserved.</p>
         </div>
     </footer>
 

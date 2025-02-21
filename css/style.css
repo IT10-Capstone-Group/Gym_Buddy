@@ -36,24 +36,24 @@ nav ul li a {
 
 /* Hero section */
 .hero {
-    background-image: url('https://source.unsplash.com/1600x900/?gym');
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    min-height: 100vh;
+    background:url(../pics/1.jpg) no-repeat;
     background-size: cover;
     background-position: center;
-    height: 80vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    color: #fff;
+    
 }
 
 .hero-content {
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 0.096);
     padding: 2rem;
     border-radius: 10px;
 }
 
 .hero h1 {
+    color: #2980b9;
     font-size: 3rem;
     margin-bottom: 1rem;
 }
@@ -61,21 +61,60 @@ nav ul li a {
 .hero p {
     font-size: 1.5rem;
     margin-bottom: 2rem;
+    color: #7aa4c0;
+}
+.home{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    min-height: 100vh;
+    background:url(../pics/1.jpg) no-repeat;
+    background-size: cover;
+    background-position: center;
+
 }
 
+.home .content{
+    background-color: rgba(15, 15, 15, 0.301);
+    border-radius: 20px;
+    max-width: 50rem;
+    padding: 2rem;
+   
+}
+
+.home .content h3{
+    font-size: 3rem;
+    
+    color: #90e0ef;
+}
+
+.home .content span{
+    font-size: 1.5rem;
+    color:#caf0f8;
+    padding:1rem 0;
+    line-height: 1.5;
+}
+
+.home .content p{
+    font-size: 1.2rem;
+    color:white;
+    padding:1rem 0;
+    line-height: 1.5;
+}
 .cta-button {
     display: inline-block;
-    background-color: #e74c3c;
+    background-color: #0077b6;
     color: #fff;
     padding: 0.8rem 2rem;
     text-decoration: none;
     border-radius: 5px;
     font-weight: bold;
     transition: background-color 0.3s ease;
+    border-radius: 20px;
 }
 
 .cta-button:hover {
-    background-color: #c0392b;
+    background-color: #1f1d1d;
 }
 
 /* Features section */
@@ -101,32 +140,51 @@ nav ul li a {
     margin-bottom: 1rem;
 }
 
-/* Testimonials section */
-.testimonials {
-    padding: 4rem 2rem;
+/*trainer part header*/
+.about .row{
+    display: flex;
+    align-items: center;
+    gap:2rem;
+    flex-wrap: wrap;
+    padding:2rem 0;
+    padding-bottom: 3rem;
+    max-width: 700px;
+    margin: auto;
+    text-align: center;
+    justify-content: center;
+    padding-top: 100px;
+}
+
+
+.about .row .content{
+    flex:1 1 70rem;
+    max-width: 100%;
+}
+
+.about .row .content h3{
+    font-size: 3rem;
+    color:#333;
     text-align: center;
 }
 
-.testimonials h2 {
-    margin-bottom: 2rem;
+.about .row .content p{
+    font-size: 1.2rem;
+    color: #999;
+    padding: .5rem 0;
+    padding-top: 1rem;
+    line-height: 1.5;
+    text-align: center;
 }
+.heading{
+    text-align: center;
+    font-size: 3rem;
+    color:white;
+    padding:1rem;
+    background: #0077b6;
 
-.testimonial {
-    max-width: 600px;
-    margin: 0 auto 2rem;
 }
+/*--END trainers--*/
 
-.testimonial img {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    margin-bottom: 1rem;
-}
-
-.testimonial p {
-    font-style: italic;
-    margin-bottom: 1rem;
-}
 
 /* Footer */
 footer {
@@ -246,30 +304,6 @@ footer {
     border: none;
 }
 
-/* Admin dashboard styles */
-.admin-dashboard table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 2rem;
-    background-color: #f4f4f4;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.admin-dashboard th,
-.admin-dashboard td {
-    padding: 1rem;
-    border: 1px solid #ddd;
-    text-align: left;
-}
-
-.admin-dashboard th {
-    background-color: #3498db;
-    color: #fff;
-}
-
-.admin-dashboard tr:nth-child(even) {
-    background-color: #f2f2f2;
-}
 
 /* Auth form styles */
 .auth-form {
@@ -457,6 +491,8 @@ footer {
 }
 
 /* Admin dashboard */
+
+
 .admin-dashboard {
     max-width: 1200px;
     margin: 0 auto;
@@ -479,7 +515,7 @@ footer {
 }
 
 .admin-dashboard th {
-    background-color: #3498db;
+    background-color:#0077b6;
     color: #fff;
 }
 

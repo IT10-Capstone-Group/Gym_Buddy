@@ -11,7 +11,6 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
 
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -50,13 +49,6 @@ CREATE TABLE `trainers` (
   `image_url` varchar(255) DEFAULT NULL,
   `specialization` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `trainers`
---
-
-INSERT INTO `trainers` (`id`, `name`, `description`, `contact`, `image_url`, `specialization`) VALUES
-(13, 'Paulo Lustestica', NULL, '09785563421', 'https://drive.google.com/drive/folders/1LuFi8736ESYSJC8tr6W0QKQONGrOM1g_', 'Body Building');
 
 -- --------------------------------------------------------
 
@@ -143,3 +135,4 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
