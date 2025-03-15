@@ -23,12 +23,17 @@ include 'php/config.php';
                 <?php if(isset($_SESSION['user_id'])): ?>
                     <?php if(isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
                         <li><a href="php/admin_dashboard.php">Admin Dashboard</a></li>
+                    <?php elseif(isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'trainer'): ?>
+                        <li><a href="php/trainer_dashboard.php">Trainer Dashboard</a></li>
+                    <?php elseif(isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'user'): ?>
+                        <li><a href="php/user_dashboard.php">My Bookings</a></li>
                     <?php endif; ?>
                     <li><a href="php/logout.php">Logout</a></li>
                 <?php else: ?>
                     <li><a href="php/login.php">Login</a></li>
                     <li><a href="php/signup.php">Sign Up</a></li>
-                <?php endif; ?>
+                <?php endif
+?> 
             </ul>
         </nav>
     </header>

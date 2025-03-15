@@ -25,6 +25,8 @@ include 'php/config.php';
                         <li><a href="php/admin_dashboard.php">Admin Dashboard</a></li>
                     <?php elseif(isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'trainer'): ?>
                         <li><a href="php/trainer_dashboard.php">Trainer Dashboard</a></li>
+                    <?php elseif(isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'user'): ?>
+                        <li><a href="php/user_dashboard.php">My Bookings</a></li>
                     <?php endif; ?>
                     <li><a href="php/logout.php">Logout</a></li>
                 <?php else: ?>

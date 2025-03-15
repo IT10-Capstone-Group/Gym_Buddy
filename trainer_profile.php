@@ -29,17 +29,6 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute([$trainer_id]);
 $bookings = $stmt->fetchAll();
 
-// Handle booking confirmation
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_booking'])) {
-    $booking_id = $_POST['booking_id'];
-    $sql = "UPDATE bookings SET status = 'confirmed' WHERE id = ?";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$booking_id]);
-    
-    // Refresh the page to show updated bookings
-    header("Location: trainer_profile.php?trainer_id=" . $trainer_id);
-    exit();
-}
 ?>
 
 <!DOCTYPE html>
@@ -51,6 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_booking'])) {
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/trainer_profile.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="css/calendar.css">
 </head>
 <body>
     <header>
@@ -63,6 +53,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_booking'])) {
                 <?php if(isset($_SESSION['user_id'])): ?>
                     <?php if(isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
                         <li><a href="php/admin_dashboard.php">Admin Dashboard</a></li>
+                    <?php elseif(isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'trainer'): ?>
+                        <li><a href="php/trainer_dashboard.php">Trainer Dashboard</a></li>
+                    <?php elseif(isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'user'): ?>
+                        <li><a href="php/user_dashboard.php">My Bookings</a></li>
                     <?php endif; ?>
                     <li><a href="php/logout.php">Logout</a></li>
                 <?php else: ?>
@@ -89,46 +83,166 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_booking'])) {
             </div>
         </div>
 
-        <?php if(isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
-        <div class="current-bookings">
-            <h2>Current Bookings</h2>
-            <?php if (empty($bookings)): ?>
-                <p>No current bookings.</p>
-            <?php else: ?>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Client</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($bookings as $booking): ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($booking['date']); ?></td>
-                                <td><?php echo htmlspecialchars($booking['time']); ?></td>
-                                <td><?php echo htmlspecialchars($booking['user_name']); ?></td>
-                                <td><?php echo ucfirst(htmlspecialchars($booking['status'])); ?></td>
-                                <td>
-                                    <?php if ($booking['status'] === 'pending'): ?>
-                                        <form method="post">
-                                            <input type="hidden" name="booking_id" value="<?php echo $booking['id']; ?>">
-                                            <button type="submit" name="confirm_booking" class="btn confirm-btn">Confirm</button>
-                                        </form>
-                                    <?php else: ?>
-                                        <?php echo ucfirst($booking['status']); ?>
-                                    <?php endif; ?>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php endif; ?>
+       
+        <?php
+        $sql = "SELECT date FROM bookings WHERE trainer_id = ? AND status = 'confirmed'";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$trainer_id]);
+        $confirmed_dates = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        // Function to generate calendar
+        function generateCalendar($year, $month, $confirmed_dates) {
+            $calendar = "";
+            
+            // Create array containing abbreviations of days of week
+            $daysOfWeek = array('Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat');
+
+            // Get the first day of the month
+            $firstDayOfMonth = mktime(0,0,0,$month,1,$year);
+
+            // Get the number of days in the month
+            $numberDays = date('t', $firstDayOfMonth);
+
+            // Get info about the first day of the month
+            $dateComponents = getdate($firstDayOfMonth);
+
+            // Get the name of the month
+            $monthName = $dateComponents['month'];
+
+            // Get the index value 0-6 of the first day of the month
+            $dayOfWeek = $dateComponents['wday'];
+
+            // Create the table tag opener and day headers
+            $calendar .= "<table class='calendar'>";
+            $calendar .= "<caption>$monthName $year</caption>";
+            $calendar .= "<tr>";
+
+            // Create the calendar headers
+            foreach($daysOfWeek as $day) {
+                $calendar .= "<th class='header'>$day</th>";
+            }
+
+            $calendar .= "</tr><tr>";
+
+            // Initiate the day counter
+            $currentDay = 1;
+
+            // The variable $dayOfWeek is used to ensure that the calendar
+            // display consists of exactly 7 columns
+            if ($dayOfWeek > 0) { 
+                $calendar .= "<td colspan='$dayOfWeek'>&nbsp;</td>"; 
+            }
+
+            $month = str_pad($month, 2, "0", STR_PAD_LEFT);
+
+            while ($currentDay <= $numberDays) {
+                // Seventh column (Saturday) reached. Start a new row.
+                if ($dayOfWeek == 7) {
+                    $dayOfWeek = 0;
+                    $calendar .= "</tr><tr>";
+                }
+                
+                $currentDayRel = str_pad($currentDay, 2, "0", STR_PAD_LEFT);
+                $date = "$year-$month-$currentDayRel";
+                
+                if (in_array($date, $confirmed_dates)) {
+                    $calendar .= "<td class='day confirmed' data-date='$date'>$currentDay</td>";
+                } else {
+                    $calendar .= "<td class='day'>$currentDay</td>";
+                }
+                
+                $currentDay++;
+                $dayOfWeek++;
+            }
+
+            // Complete the row of the last week in month, if necessary
+            if ($dayOfWeek != 7) { 
+                $remainingDays = 7 - $dayOfWeek;
+                $calendar .= "<td colspan='$remainingDays'>&nbsp;</td>"; 
+            }
+
+            $calendar .= "</tr>";
+            $calendar .= "</table>";
+
+            return $calendar;
+        }
+
+        ?>
+
+        <div class="calendar-section">
+            <h2>Booking Calendar</h2>
+            <div class="calendar-controls">
+                <button id="prevMonth">Previous Month</button>
+                
+                <button id="nextMonth">Next Month</button>
+            </div>
+            <div id="calendar">
+                <?php
+                $current_year = date('Y');
+                $current_month = date('m');
+                echo generateCalendar($current_year, $current_month, $confirmed_dates);
+                ?>
+            </div>
         </div>
-        <?php endif; ?>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let currentYear = <?php echo $current_year; ?>;
+            let currentMonth = <?php echo $current_month; ?>;
+
+            function updateCalendar() {
+                fetch(`get_calendar.php?year=${currentYear}&month=${currentMonth}&trainer_id=<?php echo $trainer_id; ?>`)
+                    .then(response => response.text())
+                    .then(data => {
+                        document.getElementById('calendar').innerHTML = data;
+                        document.getElementById('currentMonthYear').textContent = `${getMonthName(currentMonth)} ${currentYear}`;
+                    });
+            }
+
+            function getMonthName(monthNumber) {
+                const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                return months[monthNumber - 1];
+            }
+
+            document.getElementById('prevMonth').addEventListener('click', function() {
+                currentMonth--;
+                if (currentMonth < 1) {
+                    currentMonth = 12;
+                    currentYear--;
+                }
+                updateCalendar();
+            });
+
+            document.getElementById('nextMonth').addEventListener('click', function() {
+                currentMonth++;
+                if (currentMonth > 12) {
+                    currentMonth = 1;
+                    currentYear++;
+                }
+                updateCalendar();
+            });
+
+            // Add event listener for confirmed dates
+            document.getElementById('calendar').addEventListener('mouseover', function(e) {
+                if (e.target.classList.contains('confirmed')) {
+                    let date = e.target.getAttribute('data-date');
+                    // Fetch booking details for this date
+                    fetch(`get_booking_details.php?date=${date}&trainer_id=<?php echo $trainer_id; ?>`)
+                        .then(response => response.json())
+                        .then(data => {
+                            let details = `Bookings on ${date}:\n`;
+                            data.forEach(booking => {
+                                details += `${booking.time} - ${booking.user_name}\n`;
+                            });
+                            e.target.title = details;
+                        });
+                }
+            });
+
+            // Initial calendar update
+            updateCalendar();
+        });
+        </script>
     </main>
 
     <footer>

@@ -1,96 +1,308 @@
-/* trainer_dashboard.css */
-
 .dashboard-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f0f8ff;
 }
 
 .trainer-info {
-    display: flex;
-    align-items: center;
-    margin-bottom: 30px;
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 15px rgba(0, 102, 204, 0.1);
 }
 
 .trainer-image {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-right: 20px;
-    border: 3px solid #4CAF50;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 30px;
+  border: 3px solid #0066cc;
+  box-shadow: 0 0 10px rgba(0, 102, 204, 0.2);
 }
 
 .trainer-details h2 {
-    margin-bottom: 10px;
-    color: #333;
+  color: #0066cc;
+  margin-bottom: 10px;
+  font-size: 24px;
 }
 
 .trainer-details p {
-    margin: 5px 0;
-    color: #666;
+  color: #333;
+  margin-bottom: 5px;
 }
 
-.bookings {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+.trainer-details i {
+  margin-right: 10px;
+  color: #0066cc;
 }
 
-.bookings h2 {
-    color: #4CAF50;
-    margin-bottom: 20px;
+.dashboard-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
 }
 
-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
+.stat-card {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  flex-basis: 48%;
+  box-shadow: 0 4px 15px rgba(0, 102, 204, 0.1);
+  transition: transform 0.3s ease;
 }
 
-th, td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
+.stat-card:hover {
+  transform: translateY(-5px);
 }
 
-th {
-    background-color: #4CAF50;
-    color: white;
-    font-weight: bold;
+.stat-card i {
+  font-size: 2.5em;
+  color: #0066cc;
+  margin-bottom: 10px;
 }
 
-tr:nth-child(even) {
-    background-color: #f2f2f2;
+.stat-card h3 {
+  color: #333;
+  margin-bottom: 10px;
 }
 
-tr:hover {
-    background-color: #e9e9e9;
+.stat-card p {
+  font-size: 1.5em;
+  color: #0066cc;
+  font-weight: bold;
+}
+
+.bookings h2, .availability-section h2 {
+  color: #0066cc;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 22px;
+}
+
+.bookings h2 i, .availability-section h2 i {
+  color: #0066cc;
+}
+
+.bookings table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background-color: #fff;
+  box-shadow: 0 4px 15px rgba(0, 102, 204, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.bookings th,
+.bookings td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid #e6f0ff;
+}
+
+.bookings th {
+  background-color: #0066cc;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.bookings tr:last-child td {
+  border-bottom: none;
+}
+
+.bookings tr:hover {
+  background-color: #f0f8ff;
 }
 
 .no-bookings {
-    text-align: center;
-    color: #666;
-    font-style: italic;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 102, 204, 0.1);
+}
+
+.btn.confirm-btn {
+  background-color: #0066cc;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-weight: bold;
+}
+
+.btn.confirm-btn:hover {
+  background-color: #0052a3;
+}
+
+.availability-section {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 102, 204, 0.1);
+  margin-bottom: 25px;
+}
+
+.message.success {
+  background-color: #e6f7ff;
+  border: 1px solid #91d5ff;
+  color: #0066cc;
+  padding: 12px 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: bold;
+}
+
+.message.success i {
+  color: #0066cc;
+}
+
+.availability-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.day-availability {
+  background: #f0f8ff;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #b3d7ff;
+  transition: all 0.3s ease;
+}
+
+.day-availability:hover {
+  box-shadow: 0 4px 10px rgba(0, 102, 204, 0.1);
+}
+
+.day-availability:has(input[type="checkbox"]:checked) {
+  border-color: #0066cc;
+  background-color: #e6f0ff;
+}
+
+.day-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font-weight: 600;
+  color: #0066cc;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.day-toggle input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  margin-left: auto;
+  accent-color: #0066cc;
+}
+
+.time-slots {
+  display: grid;
+  gap: 12px;
+}
+
+.time-input {
+  width: 100%;
+}
+
+.time-input label {
+  font-size: 0.9rem;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.time-input label i {
+  color: #0066cc;
+}
+
+.time-input input[type="time"] {
+  padding: 8px;
+  border: 1px solid #b3d7ff;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  width: 100%;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.time-input input[type="time"]:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+.time-input input[type="time"]:disabled {
+  background-color: #f0f8ff;
+  cursor: not-allowed;
+}
+
+.update-btn {
+  background-color: #0066cc;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  margin-top: 20px;
+  box-shadow: 0 4px 6px rgba(0, 102, 204, 0.1);
+}
+
+.update-btn:hover {
+  background-color: #0052a3;
+  transform: translateY(-2px);
 }
 
 @media (max-width: 768px) {
-    .trainer-info {
-        flex-direction: column;
-        text-align: center;
-    }
+  .trainer-info {
+    flex-direction: column;
+    text-align: center;
+  }
 
-    .trainer-image {
-        margin-right: 0;
-        margin-bottom: 20px;
-    }
+  .trainer-image {
+    margin-right: 0;
+    margin-bottom: 20px;
+  }
 
-    table {
-        font-size: 14px;
-    }
+  .dashboard-stats {
+    flex-direction: column;
+  }
+
+  .stat-card {
+    margin-bottom: 20px;
+  }
+
+  .availability-form {
+    grid-template-columns: 1fr;
+  }
+
+  .update-btn {
+    width: 100%;
+  }
 }

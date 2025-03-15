@@ -1,0 +1,109 @@
+/* Calendar Styles */
+.calendar-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-section h2 {
+  text-align: center;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.calendar-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.calendar-controls button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.calendar-controls button:hover {
+  background-color: #2980b9;
+}
+
+#currentMonthYear {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.calendar {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.calendar caption {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.calendar th {
+  background-color: #f8f9fa;
+  padding: 0.75rem;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.calendar td {
+  padding: 0.75rem;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.calendar .day {
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.calendar .day:hover:not(.confirmed) {
+  background-color: #e6f7ff;
+}
+
+.calendar .confirmed {
+  background-color: #ffeeee;
+  color: #dc3545;
+  position: relative;
+  cursor: help;
+}
+
+.calendar .confirmed::after {
+  content: "✕";
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 0.7rem;
+  color: #dc3545;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .calendar-section {
+    padding: 1rem;
+  }
+
+  .calendar th,
+  .calendar td {
+    padding: 0.5rem;
+  }
+
+  .calendar-controls button {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+  }
+}
+
