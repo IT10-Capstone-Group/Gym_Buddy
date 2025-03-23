@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 15, 2025 at 02:53 AM
+-- Generation Time: Mar 23, 2025 at 01:09 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -42,9 +42,9 @@ CREATE TABLE `bookings` (
 --
 
 INSERT INTO `bookings` (`id`, `user_id`, `trainer_id`, `date`, `time`, `status`, `payment_status`) VALUES
-(43, 14, 14, '2025-03-13', '14:00:00', 'pending', 'unpaid'),
-(44, 14, 14, '2025-03-20', '16:00:00', 'pending', 'unpaid'),
-(45, 14, 15, '2025-03-10', '09:00:00', 'pending', 'unpaid');
+(44, 14, 14, '2025-03-20', '16:00:00', 'confirmed', 'paid'),
+(45, 14, 15, '2025-03-10', '09:00:00', 'pending', 'unpaid'),
+(46, 14, 14, '2025-03-27', '13:00:00', 'confirmed', 'paid');
 
 -- --------------------------------------------------------
 
@@ -68,7 +68,7 @@ CREATE TABLE `trainers` (
 INSERT INTO `trainers` (`id`, `name`, `description`, `contact`, `image_url`, `specialization`) VALUES
 (14, 'Paulo Lustestica', NULL, '09785563421', '67cb1820933cc.jpg', 'Lifting'),
 (15, 'Exequiel Dela Cruz', NULL, '09785534212', '67b7ec960d7a0.jpg', 'Body Building'),
-(16, 'Kenett Villalon', NULL, '9052718705', '67c3ecd9d9002.jpg', 'Cardio');
+(16, 'Kenett Villalon', NULL, '09052718705', '67c3ecd9d9002.jpg', 'Cardio');
 
 -- --------------------------------------------------------
 
@@ -168,7 +168,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- AUTO_INCREMENT for table `trainers`
