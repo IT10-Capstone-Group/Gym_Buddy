@@ -2,8 +2,8 @@
 session_start();
 include 'php/config.php';
 
-// Fetch trainers from the database
-$sql = "SELECT * FROM trainers";
+// Fetch only approved trainers from the database
+$sql = "SELECT * FROM trainers WHERE status = 'approved' OR status IS NULL";
 $stmt = $pdo->query($sql);
 $trainers = $stmt->fetchAll();
 ?>

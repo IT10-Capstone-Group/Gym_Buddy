@@ -6,7 +6,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    $sql = "SELECT * FROM users WHERE username = ?";
+    // Get user from database with trainer status if applicable
+    $sql = "SELECT u.*, t.status AS trainer_status 
+            FROM users u 
+            LEFT JOIN trainers t ON u.trainer_id = t.id 
+            WHERE u.username = ?";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$username]);
     $user = $stmt->fetch();
@@ -14,9 +18,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($user && password_verify($password, $user['password'])) {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
-        $_SESSION['user_role'] = $user['role']; // Make sure this column exists in your users table
-        header("Location: ../index.php");
-        exit();
+        $_SESSION['user_role'] = $user['role'];
+        
+        // If user is a trainer, check approval status
+        if ($user['role'] === 'trainer') {
+            $_SESSION['trainer_status'] = $user['trainer_status'];
+            
+            // If trainer is not approved, redirect to waiting page
+            if ($user['trainer_status'] !== 'approved') {
+                header("Location: trainer_waiting.php");
+                exit();
+            }
+            
+            // If approved, redirect to trainer dashboard
+            header("Location: trainer_dashboard.php");
+            exit();
+        } elseif ($user['role'] === 'admin') {
+            header("Location: admin_dashboard.php");
+            exit();
+        } else {
+            header("Location: ../index.php");
+            exit();
+        }
     } else {
         $error = "Invalid username or password";
     }
@@ -35,6 +58,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="auth-form">
         <h2>Login</h2>
         <?php if (isset($error)) echo "<p class='error'>$error</p>"; ?>
+        <?php if (isset($_SESSION['message'])) { 
+            echo "<p class='success'>" . $_SESSION['message'] . "</p>";
+            unset($_SESSION['message']);
+        } ?>
         <form action="" method="post">
             <input type="text" name="username" placeholder="Username" required><br>
             <input type="password" name="password" placeholder="Password" required><br>
@@ -45,4 +72,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <a href="../index.php" class="back-to-home">Back to Home</a>
 </body>
 </html>
-

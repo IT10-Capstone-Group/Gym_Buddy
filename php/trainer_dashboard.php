@@ -8,6 +8,12 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'trainer') {
     exit();
 }
 
+// Check if trainer is approved
+if (!isset($_SESSION['trainer_status']) || $_SESSION['trainer_status'] !== 'approved') {
+    header("Location: trainer_waiting.php");
+    exit();
+}
+
 // Fetch trainer information
 $user_id = $_SESSION['user_id'];
 $sql = "SELECT t.* FROM trainers t
@@ -94,8 +100,12 @@ foreach ($availability as $av) {
     ];
 }
 
-// Fetch upcoming bookings for the trainer
-$sql = "SELECT b.*, u.username
+// Fetch upcoming bookings for the trainer with latest BMI data
+$sql = "SELECT b.*, u.username, u.id as user_id,
+        (SELECT bmi FROM bmi_tracker WHERE user_id = u.id ORDER BY date_recorded DESC LIMIT 1) as bmi,
+        (SELECT weight FROM bmi_tracker WHERE user_id = u.id ORDER BY date_recorded DESC LIMIT 1) as weight,
+        (SELECT height FROM bmi_tracker WHERE user_id = u.id ORDER BY date_recorded DESC LIMIT 1) as height,
+        (SELECT date_recorded FROM bmi_tracker WHERE user_id = u.id ORDER BY date_recorded DESC LIMIT 1) as bmi_date
         FROM bookings b 
         JOIN users u ON b.user_id = u.id 
         WHERE b.trainer_id = ? AND b.date >= CURDATE()
@@ -136,6 +146,109 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_payment'])) {
     header("Location: trainer_dashboard.php");
     exit();
 }
+
+// Fetch all clients assigned to this trainer with their latest BMI data
+$sql = "SELECT DISTINCT u.id, u.username, u.email, 
+        (SELECT bmi FROM bmi_tracker WHERE user_id = u.id ORDER BY date_recorded DESC LIMIT 1) as bmi,
+        (SELECT weight FROM bmi_tracker WHERE user_id = u.id ORDER BY date_recorded DESC LIMIT 1) as weight,
+        (SELECT height FROM bmi_tracker WHERE user_id = u.id ORDER BY date_recorded DESC LIMIT 1) as height,
+        (SELECT date_recorded FROM bmi_tracker WHERE user_id = u.id ORDER BY date_recorded DESC LIMIT 1) as bmi_date,
+        (SELECT COUNT(*) FROM bmi_tracker WHERE user_id = u.id) as bmi_records_count,
+        (SELECT COUNT(*) FROM bookings WHERE user_id = u.id AND trainer_id = ?) as booking_count
+        FROM users u 
+        JOIN bookings b ON u.id = b.user_id 
+        WHERE b.trainer_id = ?
+        ORDER BY u.username";
+$stmt = $pdo->prepare($sql);
+$stmt->execute([$trainer_id, $trainer_id]);
+$clients = $stmt->fetchAll();
+
+// Function to calculate BMI
+function calculateBMI($height, $weight) {
+    // Height should be in meters, weight in kg
+    if ($height <= 0 || $weight <= 0) {
+        return null;
+    }
+    
+    // Convert height from cm to meters if needed
+    $heightInMeters = $height > 3 ? $height / 100 : $height;
+    
+    // Calculate BMI: weight (kg) / (height (m))²
+    $bmi = $weight / ($heightInMeters * $heightInMeters);
+    return round($bmi, 1);
+}
+
+// Function to determine BMI category
+function getBMICategory($bmi) {
+    if ($bmi === null) {
+        return 'Unknown';
+    } elseif ($bmi < 18.5) {
+        return 'Underweight';
+    } elseif ($bmi >= 18.5 && $bmi < 25) {
+        return 'Normal weight';
+    } elseif ($bmi >= 25 && $bmi < 30) {
+        return 'Overweight';
+    } else {
+        return 'Obese';
+    }
+}
+
+// Function to get BMI category color
+function getBMICategoryColor($category) {
+    switch ($category) {
+        case 'Underweight':
+            return '#3498db'; // Blue
+        case 'Normal weight':
+            return '#2ecc71'; // Green
+        case 'Overweight':
+            return '#f39c12'; // Orange
+        case 'Obese':
+            return '#e74c3c'; // Red
+        default:
+            return '#95a5a6'; // Gray
+    }
+}
+
+// Calculate BMI for each client if not already in database
+foreach ($clients as &$client) {
+    if ($client['bmi'] === null && $client['height'] > 0 && $client['weight'] > 0) {
+        $client['bmi'] = calculateBMI($client['height'], $client['weight']);
+    }
+    $client['bmi_category'] = getBMICategory($client['bmi']);
+    $client['bmi_color'] = getBMICategoryColor($client['bmi_category']);
+}
+unset($client); // Break the reference
+
+// Calculate BMI for each booking client if not already in database
+foreach ($bookings as &$booking) {
+    if ($booking['bmi'] === null && $booking['height'] > 0 && $booking['weight'] > 0) {
+        $booking['bmi'] = calculateBMI($booking['height'], $booking['weight']);
+    }
+    $booking['bmi_category'] = getBMICategory($booking['bmi']);
+    $booking['bmi_color'] = getBMICategoryColor($booking['bmi_category']);
+}
+unset($booking); // Break the reference
+
+// Handle BMI update
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_bmi'])) {
+    $client_id = $_POST['client_id'];
+    $weight = $_POST['weight'];
+    $height = $_POST['height'];
+    
+    // Calculate BMI
+    $bmi = calculateBMI($height, $weight);
+    
+    // Insert new BMI record
+    $sql = "INSERT INTO bmi_tracker (user_id, weight, height, bmi, date_recorded) VALUES (?, ?, ?, ?, NOW())";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$client_id, $weight, $height, $bmi]);
+    
+    $success_message = "BMI data updated successfully!";
+    
+    // Redirect to refresh the page
+    header("Location: trainer_dashboard.php?tab=clients");
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -168,6 +281,285 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_payment'])) {
         }
         .status-unpaid {
             color: #dc3545;
+        }
+        
+        /* BMI Styles */
+        .bmi-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+            color: white;
+            margin-left: 10px;
+        }
+        
+        .bmi-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .clients-section {
+            margin-top: 30px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        
+        .clients-section h2 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .client-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .client-card {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        
+        .client-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .client-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .client-name {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin: 0;
+        }
+        
+        .client-details {
+            margin-top: 10px;
+        }
+        
+        .client-details p {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .client-details i {
+            width: 20px;
+            margin-right: 8px;
+            color: #555;
+        }
+        
+        .bmi-chart {
+            margin-top: 15px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            height: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .bmi-ranges {
+            display: flex;
+            height: 100%;
+        }
+        
+        .bmi-range {
+            height: 100%;
+            position: relative;
+        }
+        
+        .bmi-range-underweight {
+            background-color: #3498db;
+            width: 18.5%;
+        }
+        
+        .bmi-range-normal {
+            background-color: #2ecc71;
+            width: 6.5%;
+        }
+        
+        .bmi-range-overweight {
+            background-color: #f39c12;
+            width: 5%;
+        }
+        
+        .bmi-range-obese {
+            background-color: #e74c3c;
+            width: 70%;
+        }
+        
+        .bmi-marker {
+            position: absolute;
+            top: -5px;
+            width: 3px;
+            height: 30px;
+            background-color: #000;
+            transform: translateX(-50%);
+        }
+        
+        .bmi-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 0.7em;
+            color: #555;
+        }
+        
+        .tab-container {
+            margin-bottom: 20px;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            margin-right: 5px;
+            border-radius: 5px 5px 0 0;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background-color: #fff;
+            border-color: #ddd;
+            border-bottom-color: #fff;
+            margin-bottom: -1px;
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .bmi-update-form {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #ddd;
+        }
+        
+        .bmi-update-form .form-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .bmi-update-form .form-group {
+            flex: 1;
+        }
+        
+        .bmi-update-form label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        
+        .bmi-update-form input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .bmi-update-form button {
+            background-color: #0077b6;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+        
+        .bmi-update-form button:hover {
+            background-color: #005f92;
+        }
+        
+        .bmi-history {
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+        
+        .bmi-history-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .bmi-history-title i {
+            margin-left: 5px;
+            transition: transform 0.3s;
+        }
+        
+        .bmi-history-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .bmi-history.open .bmi-history-content {
+            max-height: 500px;
+        }
+        
+        .bmi-history.open .bmi-history-title i {
+            transform: rotate(180deg);
+        }
+        
+        .message {
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        
+        .message.success {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: #4caf50;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .message.error {
+            background-color: rgba(244, 67, 54, 0.1);
+            color: #f44336;
+            border-left: 4px solid #f44336;
+        }
+        
+        .bmi-date {
+            font-size: 0.8em;
+            color: #777;
+            margin-top: 5px;
         }
     </style>
 </head>
@@ -208,107 +600,131 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_payment'])) {
             </div>
         </section>
 
-        <section class="availability-section">
-    <h2><i class="fas fa-clock"></i> Manage Your Availability</h2>
-    <?php if (isset($success_message)): ?>
-        <div class="message success">
-            <i class="fas fa-check-circle"></i>
-            <span><?php echo $success_message; ?></span>
-        </div>
-    <?php endif; ?>
-    
-    <form method="post" class="availability-form">
-        <?php foreach ($days as $day_num => $day_name): ?>
-            <div class="day-availability">
-                <div class="day-header">
-                    <label class="day-toggle">
-                        <span><?php echo $day_name; ?></span>
-                        <input type="checkbox" 
-                               name="availability[<?php echo $day_num; ?>][is_available]" 
-                               <?php echo $current_availability[$day_num]['is_available'] ? 'checked' : ''; ?>>
-                    </label>
-                </div>
-                <div class="time-slots">
-                    <div class="time-input">
-                        <label>
-                            <i class="fas fa-sun"></i>
-                            <span>Start Time</span>
-                        </label>
-                        <input type="time" 
-                               name="availability[<?php echo $day_num; ?>][start_time]" 
-                               value="<?php echo substr($current_availability[$day_num]['start_time'], 0, 5); ?>"
-                               <?php echo !$current_availability[$day_num]['is_available'] ? 'disabled' : ''; ?>>
-                    </div>
-                    <div class="time-input">
-                        <label>
-                            <i class="fas fa-moon"></i>
-                            <span>End Time</span>
-                        </label>
-                        <input type="time" 
-                               name="availability[<?php echo $day_num; ?>][end_time]" 
-                               value="<?php echo substr($current_availability[$day_num]['end_time'], 0, 5); ?>"
-                               <?php echo !$current_availability[$day_num]['is_available'] ? 'disabled' : ''; ?>>
-                    </div>
-                </div>
+        <?php if (isset($success_message)): ?>
+            <div class="message success">
+                <i class="fas fa-check-circle"></i>
+                <span><?php echo $success_message; ?></span>
             </div>
-        <?php endforeach; ?>
-        <button type="submit" name="update_availability" class="update-btn">
-            <i class="fas fa-save"></i>
-            <span>Update Availability</span>
-        </button>
-    </form>
-</section>
+        <?php endif; ?>
 
-        <section class="bookings">
-            <h2><i class="fas fa-calendar-alt"></i> Upcoming Bookings</h2>
-            <?php if (count($bookings) > 0): ?>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Client</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                            <th>Payment</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($bookings as $booking): ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($booking['date']); ?></td>
-                                <td><?php echo htmlspecialchars($booking['time']); ?></td>
-                                <td><?php echo htmlspecialchars($booking['username']); ?></td>
-                                <td><?php echo htmlspecialchars(ucfirst($booking['status'])); ?></td>
-                                <td>
-                                    <?php if ($booking['status'] === 'pending'): ?>
-                                        <form method="post" style="display: inline-block; margin-right: 5px;">
-                                            <input type="hidden" name="booking_id" value="<?php echo $booking['id']; ?>">
-                                            <button type="submit" name="confirm_booking" class="btn confirm-btn">Confirm</button>
-                                        </form>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <?php if (isset($booking['payment_status']) && $booking['payment_status'] === 'paid'): ?>
-                                        <span class="payment-status status-paid"><i class="fas fa-check-circle"></i> Paid</span>
-                                    <?php else: ?>
-                                        <span class="payment-status status-unpaid"><i class="fas fa-times-circle"></i> Unpaid</span>
-                                        <form method="post" style="display: inline-block; margin-left: 5px;">
-                                            <input type="hidden" name="booking_id" value="<?php echo $booking['id']; ?>">
-                                            <button type="submit" name="confirm_payment" class="payment-btn">
-                                                <i class="fas fa-money-bill-wave"></i> Confirm
-                                            </button>
-                                        </form>
-                                    <?php endif; ?>
-                                </td>
-                            </tr>
+        <div class="tab-container">
+            <div class="tabs">
+                <div class="tab <?php echo !isset($_GET['tab']) || $_GET['tab'] == 'bookings' ? 'active' : ''; ?>" data-tab="bookings">Upcoming Bookings</div>
+                <div class="tab <?php echo isset($_GET['tab']) && $_GET['tab'] == 'availability' ? 'active' : ''; ?>" data-tab="availability">Manage Availability</div>
+            </div>
+            
+            <div id="bookings" class="tab-content <?php echo !isset($_GET['tab']) || $_GET['tab'] == 'bookings' ? 'active' : ''; ?>">
+                <section class="bookings">
+                    <h2><i class="fas fa-calendar-alt"></i> Upcoming Bookings</h2>
+                    <?php if (count($bookings) > 0): ?>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Client</th>
+                                    <th>BMI Status</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                    <th>Payment</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($bookings as $booking): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($booking['date']); ?></td>
+                                        <td><?php echo htmlspecialchars($booking['time']); ?></td>
+                                        <td><?php echo htmlspecialchars($booking['username']); ?></td>
+                                        <td>
+                                            <?php if ($booking['bmi']): ?>
+                                                <div class="bmi-indicator" style="background-color: <?php echo $booking['bmi_color']; ?>">
+                                                    <span class="bmi-dot" style="background-color: <?php echo $booking['bmi_color']; ?>"></span>
+                                                    <?php echo $booking['bmi']; ?> - <?php echo $booking['bmi_category']; ?>
+                                                </div>
+                                            <?php else: ?>
+                                                <span class="bmi-indicator" style="background-color: #95a5a6;">No BMI data</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td><?php echo htmlspecialchars(ucfirst($booking['status'])); ?></td>
+                                        <td>
+                                            <?php if ($booking['status'] === 'pending'): ?>
+                                                <form method="post" style="display: inline-block; margin-right: 5px;">
+                                                    <input type="hidden" name="booking_id" value="<?php echo $booking['id']; ?>">
+                                                    <button type="submit" name="confirm_booking" class="btn confirm-btn">Confirm</button>
+                                                </form>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <?php if (isset($booking['payment_status']) && $booking['payment_status'] === 'paid'): ?>
+                                                <span class="payment-status status-paid"><i class="fas fa-check-circle"></i> Paid</span>
+                                            <?php else: ?>
+                                                <span class="payment-status status-unpaid"><i class="fas fa-times-circle"></i> Unpaid</span>
+                                                <form method="post" style="display: inline-block; margin-left: 5px;">
+                                                    <input type="hidden" name="booking_id" value="<?php echo $booking['id']; ?>">
+                                                    <button type="submit" name="confirm_payment" class="payment-btn">
+                                                        <i class="fas fa-money-bill-wave"></i> Confirm
+                                                    </button>
+                                                </form>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    <?php else: ?>
+                        <p class="no-bookings">No upcoming bookings.</p>
+                    <?php endif; ?>
+                </section>
+            </div>
+            
+            
+            <div id="availability" class="tab-content <?php echo isset($_GET['tab']) && $_GET['tab'] == 'availability' ? 'active' : ''; ?>">
+                <section class="availability-section">
+                    <h2><i class="fas fa-clock"></i> Manage Your Availability</h2>
+                    
+                    <form method="post" class="availability-form">
+                        <?php foreach ($days as $day_num => $day_name): ?>
+                            <div class="day-availability">
+                                <div class="day-header">
+                                    <label class="day-toggle">
+                                        <span><?php echo $day_name; ?></span>
+                                        <input type="checkbox" 
+                                               name="availability[<?php echo $day_num; ?>][is_available]" 
+                                               <?php echo $current_availability[$day_num]['is_available'] ? 'checked' : ''; ?>>
+                                    </label>
+                                </div>
+                                <div class="time-slots">
+                                    <div class="time-input">
+                                        <label>
+                                            <i class="fas fa-sun"></i>
+                                            <span>Start Time</span>
+                                        </label>
+                                        <input type="time" 
+                                               name="availability[<?php echo $day_num; ?>][start_time]" 
+                                               value="<?php echo substr($current_availability[$day_num]['start_time'], 0, 5); ?>"
+                                               <?php echo !$current_availability[$day_num]['is_available'] ? 'disabled' : ''; ?>>
+                                    </div>
+                                    <div class="time-input">
+                                        <label>
+                                            <i class="fas fa-moon"></i>
+                                            <span>End Time</span>
+                                        </label>
+                                        <input type="time" 
+                                               name="availability[<?php echo $day_num; ?>][end_time]" 
+                                               value="<?php echo substr($current_availability[$day_num]['end_time'], 0, 5); ?>"
+                                               <?php echo !$current_availability[$day_num]['is_available'] ? 'disabled' : ''; ?>>
+                                    </div>
+                                </div>
+                            </div>
                         <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php else: ?>
-                <p class="no-bookings">No upcoming bookings.</p>
-            <?php endif; ?>
-        </section>
+                        <button type="submit" name="update_availability" class="update-btn">
+                            <i class="fas fa-save"></i>
+                            <span>Update Availability</span>
+                        </button>
+                    </form>
+                </section>
+            </div>
+        </div>
     </main>
 
     <footer>
@@ -352,6 +768,44 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_payment'])) {
                 });
             });
         });
+        
+        // Tab functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs and tab contents
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                this.classList.add('active');
+                
+                // Show corresponding tab content
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+                
+                // Update URL with tab parameter
+                const url = new URL(window.location.href);
+                url.searchParams.set('tab', tabId);
+                window.history.replaceState({}, '', url);
+            });
+        });
+        
+        // BMI chart marker positioning
+        document.addEventListener('DOMContentLoaded', function() {
+            // This ensures the BMI markers are positioned correctly after the page loads
+            const bmiMarkers = document.querySelectorAll('.bmi-marker');
+            bmiMarkers.forEach(marker => {
+                // Make sure the marker is visible after page load
+                marker.style.transition = 'left 0.5s ease-in-out';
+            });
+        });
+        
+        // Toggle BMI history
+        function toggleBMIHistory(element) {
+            const historyContainer = element.closest('.bmi-history');
+            historyContainer.classList.toggle('open');
+        }
     </script>
 </body>
 </html>
+

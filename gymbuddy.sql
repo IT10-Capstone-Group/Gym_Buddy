@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 23, 2025 at 01:09 PM
+-- Generation Time: Apr 01, 2025 at 04:43 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,6 +20,21 @@ SET time_zone = "+00:00";
 --
 -- Database: `gymbuddy`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `bmi_tracker`
+--
+
+CREATE TABLE `bmi_tracker` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `weight` decimal(5,2) NOT NULL,
+  `height` decimal(5,2) NOT NULL,
+  `bmi` decimal(4,2) NOT NULL,
+  `date_recorded` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -42,9 +57,9 @@ CREATE TABLE `bookings` (
 --
 
 INSERT INTO `bookings` (`id`, `user_id`, `trainer_id`, `date`, `time`, `status`, `payment_status`) VALUES
-(44, 14, 14, '2025-03-20', '16:00:00', 'confirmed', 'paid'),
-(45, 14, 15, '2025-03-10', '09:00:00', 'pending', 'unpaid'),
-(46, 14, 14, '2025-03-27', '13:00:00', 'confirmed', 'paid');
+(59, 14, 14, '2025-04-01', '17:00:00', 'pending', 'unpaid'),
+(60, 14, 14, '2025-04-01', '12:00:00', 'cancelled', 'unpaid'),
+(61, 14, 14, '2025-04-01', '14:00:00', 'confirmed', 'paid');
 
 -- --------------------------------------------------------
 
@@ -90,14 +105,18 @@ CREATE TABLE `trainer_availability` (
 --
 
 INSERT INTO `trainer_availability` (`id`, `trainer_id`, `day_of_week`, `start_time`, `end_time`, `is_available`) VALUES
-(50, 14, 4, '09:00:00', '17:00:00', 1),
 (51, 15, 1, '09:00:00', '17:00:00', 1),
 (52, 15, 3, '09:00:00', '17:00:00', 1),
 (53, 15, 4, '09:00:00', '17:00:00', 1),
 (54, 15, 5, '09:00:00', '19:00:00', 1),
 (55, 16, 1, '09:00:00', '22:00:00', 1),
 (56, 16, 2, '09:00:00', '19:00:00', 1),
-(57, 16, 3, '09:00:00', '23:00:00', 1);
+(57, 16, 3, '09:00:00', '23:00:00', 1),
+(65, 14, 0, '09:00:00', '17:00:00', 1),
+(66, 14, 1, '09:00:00', '23:00:00', 1),
+(67, 14, 2, '09:00:00', '17:00:00', 1),
+(68, 14, 3, '11:00:00', '19:00:00', 1),
+(69, 14, 4, '09:00:00', '17:00:00', 1);
 
 -- --------------------------------------------------------
 
@@ -129,6 +148,13 @@ INSERT INTO `users` (`id`, `username`, `email`, `password`, `role`, `trainer_id`
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `bmi_tracker`
+--
+ALTER TABLE `bmi_tracker`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
 
 --
 -- Indexes for table `bookings`
@@ -165,10 +191,16 @@ ALTER TABLE `users`
 --
 
 --
+-- AUTO_INCREMENT for table `bmi_tracker`
+--
+ALTER TABLE `bmi_tracker`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
 
 --
 -- AUTO_INCREMENT for table `trainers`
@@ -180,7 +212,7 @@ ALTER TABLE `trainers`
 -- AUTO_INCREMENT for table `trainer_availability`
 --
 ALTER TABLE `trainer_availability`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -191,6 +223,12 @@ ALTER TABLE `users`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `bmi_tracker`
+--
+ALTER TABLE `bmi_tracker`
+  ADD CONSTRAINT `bmi_tracker_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `bookings`
